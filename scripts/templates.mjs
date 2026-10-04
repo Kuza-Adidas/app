@@ -18,6 +18,7 @@ const ICON = {
   truck: '<path d="M3 6h11v10H3zM14 9h4l3 3v4h-7"/><circle cx="7" cy="18" r="1.6"/><circle cx="17" cy="18" r="1.6"/>',
   tag: '<path d="M3 12V4h8l10 10-8 8z"/><circle cx="7.5" cy="8.5" r="1.3"/>',
   label: '<path d="M5 4h14v16H5z"/><path d="M8 8h8M8 12h8M8 16h5"/>',
+  plus: '<path d="M12 5v14M5 12h14"/>',
 };
 export const icon = (n, cls = 'icon') => `<svg class="${cls}" viewBox="0 0 24 24" aria-hidden="true">${ICON[n]}</svg>`;
 const seal = (cls = 'seal') => `<span class="${cls}" aria-hidden="true"><span>好</span><span>吃</span></span>`;
@@ -30,34 +31,39 @@ export function spicy(level) {
 }
 
 export function productCard(p, r, eager = false) {
-  return `<article class="card">
-<div class="card-media">${p.badge ? `<span class="badge" data-kind="${esc(p.badge)}">${esc(p.badge)}</span>` : ''}<img src="${r}${esc(p.thumb)}" srcset="${r}${esc(p.thumb)} 360w, ${r}${esc(p.image)} 720w" sizes="(max-width: 560px) 46vw, 260px" alt="${esc(p.name)}" width="360" height="450" loading="${eager ? 'eager' : 'lazy'}" decoding="async"></div>
+  return `<article class="card" data-cat="${esc(p.category)}" data-reveal>
+<div class="card-media"><span class="plate" aria-hidden="true"></span>${p.badge ? `<span class="badge" data-kind="${esc(p.badge)}">${esc(p.badge)}</span>` : ''}<img src="${r}${esc(p.thumb)}" srcset="${r}${esc(p.thumb)} 360w, ${r}${esc(p.image)} 720w" sizes="(max-width: 560px) 46vw, 260px" alt="${esc(p.name)}" width="360" height="450" loading="${eager ? 'eager' : 'lazy'}" decoding="async"></div>
 <div class="card-body"><div class="card-meta"><span>${esc(p.weight)}</span>${spicy(p.spicy)}</div>
 <h3 class="card-title"><a href="${r}p/${esc(p.id)}.html">${esc(p.name)}</a></h3>
-<div class="card-foot"><div class="price"><b>${money(p.price)}</b>${p.oldPrice ? `<s>${money(p.oldPrice)}</s>` : ''}</div><div data-buy="${esc(p.id)}"><button class="add-btn" type="button" data-add="${esc(p.id)}" aria-label="Добавить «${esc(p.name)}» в корзину">${icon('cart')}В корзину</button></div></div></div>
+<div class="card-foot"><div class="price"><b>${money(p.price)}</b>${p.oldPrice ? `<s>${money(p.oldPrice)}</s>` : ''}</div><div data-buy="${esc(p.id)}"><button class="add-btn" type="button" data-add="${esc(p.id)}" aria-label="Добавить «${esc(p.name)}» в корзину">${icon('plus')}<span>В корзину</span></button></div></div></div>
 </article>`;
 }
+
+// Бумажный фонарь (декор): контур тушью, качается на нитке.
+export const lantern = (cls) => `<svg class="lantern ${cls}" viewBox="0 0 120 260" aria-hidden="true"><path d="M60 0V46" stroke="#17110E" stroke-width="3"/><rect x="38" y="44" width="44" height="16" rx="4" fill="#F2B705" stroke="#17110E" stroke-width="3"/><ellipse cx="60" cy="122" rx="52" ry="64" fill="#D7301F" stroke="#17110E" stroke-width="3.5"/><path d="M60 58C36 80 36 164 60 186M60 58C84 80 84 164 60 186M60 58V186M30 76C10 100 10 144 30 168M90 76C110 100 110 144 90 168" fill="none" stroke="#17110E" stroke-width="2" opacity=".55"/><text x="60" y="138" text-anchor="middle" font-size="46" fill="#F2B705" font-family="MaShan, serif">福</text><rect x="38" y="184" width="44" height="16" rx="4" fill="#F2B705" stroke="#17110E" stroke-width="3"/><path d="M50 200V250M60 200V258M70 200V250" stroke="#D7301F" stroke-width="4" stroke-linecap="round"/></svg>`;
+
+const doodleArrow = '<svg class="doodle" viewBox="0 0 120 70" aria-hidden="true"><path d="M110 8C80 4 40 14 22 52" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><path d="M12 38L22 54L36 44" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
 function header(r, active) {
   const nav = [
     ['catalog.html', 'Каталог', 'catalog'], ['catalog.html?cat=drinks', 'Напитки'], ['catalog.html?cat=sweets', 'Сладости'],
-    ['catalog.html?cat=spicy', 'Острое'], ['delivery.html', 'Доставка и оплата', 'delivery'], ['contacts.html', 'Контакты', 'contacts'],
+    ['catalog.html?cat=spicy', 'Острое'], ['delivery.html', 'Доставка', 'delivery'], ['contacts.html', 'Контакты', 'contacts'],
   ];
   return `<header class="header"><div class="container header-row">
-<a class="logo" href="${r}index.html">${seal()}<span class="logo-text"><b>ХАОЧИ</b><small>китайские снеки</small></span></a>
+<a class="logo" href="${r}index.html">${seal()}<span class="logo-text"><b>ХАОЧИ</b><small>снеки с ночного рынка</small></span></a>
 <nav class="nav" id="nav" aria-label="Основное меню">${nav.map(([href, label, key]) => `<a href="${r}${href}"${key && key === active ? ' aria-current="page"' : ''}>${label}</a>`).join('')}</nav>
 <div class="header-actions">
 <a class="icon-btn" href="${r}catalog.html" aria-label="Поиск по каталогу">${icon('search')}</a>
-<a class="icon-btn" href="${r}checkout.html" data-open-cart aria-label="Корзина">${icon('cart')}<span class="cart-count" hidden>0</span></a>
+<a class="icon-btn cart-btn" href="${r}checkout.html" data-open-cart aria-label="Корзина">${icon('cart')}<span class="cart-count" hidden>0</span></a>
 <button class="icon-btn burger" type="button" aria-label="Меню" aria-expanded="false" aria-controls="nav">${icon('menu')}</button>
 </div></div></header>`;
 }
 
 function footer(r, site) {
   const s = site.settings;
-  return `<footer class="footer"><div class="container">
+  return `<footer class="footer"><div class="footer-brush" aria-hidden="true" lang="zh">好吃</div><div class="container">
 <div class="footer-grid">
-<div><a class="logo" href="${r}index.html">${seal()}<span class="logo-text"><b>ХАОЧИ</b><small>китайские снеки</small></span></a>
+<div><a class="logo" href="${r}index.html">${seal()}<span class="logo-text"><b>ХАОЧИ</b><small>снеки с ночного рынка</small></span></a>
 <p>Магазин азиатских снеков и напитков. Только товары с маркировкой на русском языке и документами о соответствии ЕАЭС.</p></div>
 <div><h3>Покупателям</h3><ul><li><a href="${r}catalog.html">Каталог</a></li><li><a href="${r}delivery.html">Доставка и оплата</a></li><li><a href="${r}delivery.html#returns">Возврат и обмен</a></li><li><a href="${r}contacts.html">Контакты</a></li></ul></div>
 <div><h3>Документы</h3><ul><li><a href="${r}offer.html">Публичная оферта</a></li><li><a href="${r}privacy.html">Политика обработки персональных данных</a></li><li><a href="${r}consent.html">Согласие на обработку данных</a></li><li><a href="${r}marketing.html">Согласие на рассылку</a></li><li><a href="${r}cookies.html">Политика cookie</a></li></ul></div>
@@ -112,12 +118,12 @@ ${noindex ? '' : `<link rel="canonical" href="${esc(canonical)}">`}
 <meta property="og:url" content="${esc(canonical)}">
 <meta property="og:image" content="${esc(og)}">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="theme-color" content="#B3261E">
+<meta name="theme-color" content="#D7301F">
 <link rel="icon" href="${r}assets/img/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="${r}assets/img/apple-touch-icon.png">
 <link rel="manifest" href="${r}manifest.webmanifest">
-<link rel="preload" href="${r}assets/fonts/manrope-cyrillic-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="${r}assets/fonts/playfair-display-cyrillic-700-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="${r}assets/fonts/golos-text-cyrillic-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="${r}assets/fonts/unbounded-cyrillic-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
 ${preload.map(src => `<link rel="preload" href="${r}${src}" as="image" fetchpriority="high">`).join('\n')}
 <link rel="stylesheet" href="${r}assets/css/${scripts.includes('admin') ? 'admin' : 'main'}.css?v=${assets.css}">
 ${scripts.map(s => `<script type="module" src="${r}assets/js/${s}.js?v=${assets[s]}"></script>`).join('\n')}
@@ -152,9 +158,8 @@ export function crumbsLd(site, items) {
 // ------------------------------- главная -------------------------------
 export function homePage(site, products) {
   const r = '';
-  const pick = (id) => products.find(p => p.id === id);
   const hits = products.filter(p => p.badge === 'Хит' || p.oldPrice).slice(0, 8);
-  const fresh = products.filter(p => p.badge === 'Новинка').concat(products.filter(p => p.badge !== 'Новинка' && p.photo)).slice(0, 4);
+  const fresh = products.filter(p => p.badge === 'Новинка').concat(products.filter(p => ['lychee-soda', 'mochi-taro', 'hawthorn'].includes(p.id))).slice(0, 4);
   const catImg = { drinks: 'milktea-original', sweets: 'jelly-strawberry', spicy: 'latiao-lobster', snacks: 'rice-crackers', noodles: 'noodles-chongqing' };
   const faq = [
     ['Товары оригинальные?', 'Да. Мы работаем с официальными импортёрами: на каждой упаковке есть русскоязычная маркировка, а на товары — декларации о соответствии техническим регламентам ЕАЭС.'],
@@ -163,62 +168,73 @@ export function homePage(site, products) {
     ['Можно ли вернуть товар?', 'Пищевые продукты надлежащего качества возврату не подлежат по закону, но если товар пришёл повреждённым или с истекающим сроком — заменим или вернём деньги.'],
     ['Как связаться с поддержкой?', 'Напишите в чат на сайте (кнопка в правом нижнем углу) — помощник ответит сразу, а оператор подключится в рабочее время.'],
   ];
+  const tickerItems = [['辣条', 'латяо'], ['奶茶', 'молочный чай'], ['麻薯', 'моти'], ['吸吸冻', 'питьевое желе'], ['米饼', 'рисовые крекеры'], ['荔枝', 'личи'], ['话梅', 'сушёная слива'], ['重庆小面', 'лапша по-чунцински']];
+  const ticker = tickerItems.map(([cn, ru]) => `<span class="tick"><span class="tick-cn" lang="zh">${cn}</span>${ru}</span><span class="tick-dot"></span>`).join('');
+  const head = (cn, kicker, title, id, extra = '') => `<div class="section-head" data-reveal><div><p class="kicker"><span class="kicker-cn" lang="zh">${cn}</span>${kicker}</p><h2 id="${id}">${title}</h2></div>${extra}</div>`;
   const body = `
-<section class="hero"><div class="container hero-grid">
-<div>
-<span class="eyebrow">Китайские снеки и напитки</span>
-<h1>Вкус Китая —<br><em>в&nbsp;каждой упаковке</em></h1>
-<p class="hero-lead">Латяо, молочный чай, моти и ещё десятки вкусов, о которых вы слышали в обзорах. Привезли, проверили, доставим за 1–5 дней.</p>
-<div class="hero-cta"><a class="btn btn-primary" href="catalog.html">Перейти в каталог</a><a class="btn btn-ghost" href="catalog.html?cat=spicy">Острое меню</a></div>
-<div class="hero-facts"><div><b>${products.length}+</b><span>позиций в каталоге</span></div><div><b>1–5 дней</b><span>доставка по России</span></div><div><b data-setting="freeShippingFrom">${money(site.settings.freeShippingFrom)}</b><span>бесплатная доставка от</span></div></div>
+<section class="hero">
+<div class="hero-lanterns" aria-hidden="true">${lantern('l1')}${lantern('l2')}${lantern('l3')}</div>
+<div class="container hero-grid">
+<div class="hero-copy">
+<p class="sign"><span class="sign-cn" lang="zh">夜市</span><span>ночной рынок снеков · с 2026 года</span></p>
+<h1 class="hero-title"><span class="line">Вкус Китая</span><span class="line">в <mark>каждой</mark></span><span class="line">упаковке</span></h1>
+<p class="hero-lead">Латяо, молочный чай, моти и ещё два десятка вкусов, о которых вы слышали в обзорах. Привезли, попробовали сами, доставим за 1–5 дней.</p>
+<div class="hero-cta"><a class="btn btn-primary" href="catalog.html">Открыть каталог</a><a class="btn btn-ghost" href="catalog.html?cat=spicy">Острое меню</a><span class="scribble">${doodleArrow}латяо от 69 ₽</span></div>
+<dl class="hero-facts"><div><dt>в каталоге</dt><dd>${products.length} вкусов</dd></div><div><dt>доставка</dt><dd>1–5 дней</dd></div><div><dt>бесплатно от</dt><dd data-setting="freeShippingFrom">${money(site.settings.freeShippingFrom)}</dd></div></dl>
 </div>
-<div class="hero-art" aria-hidden="true"><div class="hero-sun"></div><div class="hero-glyph">好吃</div>
-<img class="p4" src="assets/img/products/latiao-lobster-360.webp" alt="" width="360" height="450" decoding="async">
-<img class="p2" src="assets/img/products/milktea-jasmine-360.webp" alt="" width="360" height="450" decoding="async">
-<img class="p3" src="assets/img/products/jelly-peach-360.webp" alt="" width="360" height="450" decoding="async">
-<img class="p1" src="assets/img/products/hibaby-strawberry.webp" alt="" width="720" height="900" fetchpriority="high" decoding="async">
+<div class="hero-art" aria-hidden="true">
+<div class="hero-brush" lang="zh">好吃</div>
+<div class="spin-badge"><svg viewBox="0 0 200 200"><defs><path id="badge-circle" d="M100 100m-78 0a78 78 0 1 1 156 0a78 78 0 1 1-156 0"/></defs><text><textPath href="#badge-circle" textLength="486" lengthAdjust="spacing">ДОСТАВКА ПО РОССИИ · 1–5 ДНЕЙ · ХАОЧИ ·</textPath></text></svg><span class="spin-core" lang="zh">好吃</span></div>
+<img class="st st1" src="assets/img/products/hibaby-strawberry.webp" alt="" width="720" height="900" fetchpriority="high" decoding="async">
+<img class="st st2" src="assets/img/products/milktea-jasmine-360.webp" alt="" width="360" height="450" decoding="async">
+<img class="st st3" src="assets/img/products/latiao-lobster-360.webp" alt="" width="360" height="450" decoding="async">
+<img class="st st4" src="assets/img/products/jelly-peach-360.webp" alt="" width="360" height="450" decoding="async">
 </div></div></section>
+<div class="ticker" aria-hidden="true"><div class="ticker-track">${ticker}${ticker}</div></div>
 
-<div class="container"><div class="benefits">
-<div class="benefit">${icon('shield')}<div><b>Оригинальная продукция</b><span>Официальный импорт и декларации ЕАЭС</span></div></div>
-<div class="benefit">${icon('label')}<div><b>Маркировка на русском</b><span>Состав и сроки — на каждой упаковке</span></div></div>
-<div class="benefit">${icon('truck')}<div><b>Доставка 1–5 дней</b><span>Курьер, пункты выдачи, Почта России</span></div></div>
-<div class="benefit">${icon('tag')}<div><b>Честные цены</b><span>Без скрытых наценок и подписок</span></div></div>
-</div></div>
+<div class="container"><ul class="benefits">
+<li data-reveal>${icon('shield')}<div><b>Оригинальная продукция</b><span>официальный импорт, декларации ЕАЭС</span></div></li>
+<li data-reveal>${icon('label')}<div><b>Маркировка на русском</b><span>состав и сроки на каждой упаковке</span></div></li>
+<li data-reveal>${icon('truck')}<div><b>Доставка 1–5 дней</b><span>курьер, пункты выдачи, почта</span></div></li>
+<li data-reveal>${icon('tag')}<div><b>Честные цены</b><span>без подписок и скрытых наценок</span></div></li>
+</ul></div>
 
-<section class="section section-alt" aria-labelledby="cats-title"><div class="container">
-<div class="section-head"><div><span class="ornament" aria-hidden="true"></span><h2 id="cats-title">Категории</h2></div><p>Выберите настроение: сладкое, острое или что-нибудь, чтобы запить.</p></div>
-<div class="cats">${Object.entries(CATEGORIES).map(([k, v]) => `<a class="cat" href="catalog.html?cat=${k}"><span class="cn" lang="zh">${CAT_CN[k]}</span><img src="assets/img/products/${catImg[k]}-360.webp" alt="" width="360" height="450" loading="lazy" decoding="async"><b>${v}</b><span>${CAT_HINT[k]}</span></a>`).join('')}</div>
+<section class="section" aria-labelledby="cats-title"><div class="container">
+${head('分类', 'выберите настроение', 'Ряды рынка', 'cats-title', '<p class="note">сладкое, острое или чем запить — у каждого ряда своя вывеска</p>')}
+<div class="cats">${Object.entries(CATEGORIES).map(([k, v]) => `<a class="cat" data-cat="${k}" href="catalog.html?cat=${k}" data-reveal><span class="cat-cn" lang="zh">${CAT_CN[k]}</span><img src="assets/img/products/${catImg[k]}-360.webp" alt="" width="360" height="450" loading="lazy" decoding="async"><b>${v}</b><span>${CAT_HINT[k]}</span></a>`).join('')}</div>
 </div></section>
 
-<section class="section" aria-labelledby="hits-title"><div class="container">
-<div class="section-head"><div><span class="ornament" aria-hidden="true"></span><h2 id="hits-title">Хиты продаж</h2></div><a class="btn btn-ghost btn-sm" href="catalog.html">Весь каталог</a></div>
+<section class="section section-alt" aria-labelledby="hits-title"><div class="container">
+${head('热卖', 'берут чаще всего', 'Хиты продаж', 'hits-title', '<a class="btn btn-ghost btn-sm" href="catalog.html">Весь каталог</a>')}
 <div class="grid" data-grid="hits">${hits.map(p => productCard(p, r)).join('')}</div>
 </div></section>
 
-<section class="section pt-0"><div class="container"><div class="promo">
-<div><span class="eyebrow eyebrow-gold">Острый вызов</span><h2>Сколько перчиков выдержите вы?</h2><p>Латяо, соевые полоски мала и лапша по-чунцински — собрали самые острые снеки Китая в одном разделе. Шкала остроты на каждой карточке.</p><a class="btn btn-light" href="catalog.html?cat=spicy">Выбрать острое</a></div>
-<div class="promo-art" aria-hidden="true"><img src="assets/img/products/latiao-classic-360.webp" alt="" width="360" height="450" loading="lazy"><img src="assets/img/products/latiao-lobster-360.webp" alt="" width="360" height="450" loading="lazy"><img src="assets/img/products/noodles-chongqing-360.webp" alt="" width="360" height="450" loading="lazy"></div>
-</div></div></section>
+<section class="night" aria-labelledby="promo-title">
+<div class="night-lanterns" aria-hidden="true">${lantern('l4')}${lantern('l5')}</div>
+<div class="container night-grid">
+<div data-reveal><p class="kicker kicker-light"><span class="kicker-cn" lang="zh">辣</span>острый вызов</p><h2 id="promo-title" class="neon">Сколько перчиков<br>выдержите вы?</h2><p>Латяо, соевые полоски мала и лапша по-чунцински. Собрали самые острые снеки Китая в одном ряду, острота отмечена на каждой карточке.</p><a class="btn btn-mustard" href="catalog.html?cat=spicy">Выбрать острое</a></div>
+<div class="night-art" aria-hidden="true"><img src="assets/img/products/latiao-classic-360.webp" alt="" width="360" height="450" loading="lazy"><img src="assets/img/products/noodles-chongqing-360.webp" alt="" width="360" height="450" loading="lazy"><img src="assets/img/products/peanuts-mala-360.webp" alt="" width="360" height="450" loading="lazy"></div>
+</div></section>
 
-<section class="section section-alt" aria-labelledby="new-title"><div class="container">
-<div class="section-head"><div><span class="ornament" aria-hidden="true"></span><h2 id="new-title">Новинки и находки</h2></div><p>То, что недавно появилось на полках и уже разлетается.</p></div>
+<section class="section" aria-labelledby="new-title"><div class="container">
+${head('新品', 'только что на полке', 'Новинки и находки', 'new-title', '<p class="note">пробуем каждую новинку сами, прежде чем привезти</p>')}
 <div class="grid" data-grid="new">${fresh.map(p => productCard(p, r)).join('')}</div>
 </div></section>
 
-<section class="section" aria-labelledby="about-title"><div class="container about">
-<div><span class="ornament" aria-hidden="true"></span><h2 id="about-title">Почему ХАОЧИ</h2><p class="muted">«Хаочи» (好吃) по-китайски значит «вкусно». Мы пробуем каждую новинку сами и оставляем в каталоге только то, за что не стыдно.</p>
+<section class="section section-alt" aria-labelledby="about-title"><div class="container about">
+<div data-reveal><p class="kicker"><span class="kicker-cn" lang="zh">好吃</span>значит «вкусно»</p><h2 id="about-title">Почему ХАОЧИ</h2><p class="muted">Мы ходим по китайским маркетплейсам, как по ночному рынку: пробуем, спорим и оставляем на полке только то, за что не стыдно.</p>
 <a class="btn btn-ghost" href="delivery.html">Условия доставки</a></div>
 <ol class="about-list">
-<li><span class="num">1</span><div><b>Отбираем вкусы</b><span>Следим за трендами китайских маркетплейсов и тестируем новинки.</span></div></li>
-<li><span class="num">2</span><div><b>Проверяем документы</b><span>Работаем только с товарами, прошедшими сертификацию в ЕАЭС.</span></div></li>
-<li><span class="num">3</span><div><b>Бережно упаковываем</b><span>Хрупкое — в пузырчатую плёнку, напитки — в отдельный пакет.</span></div></li>
-<li><span class="num">4</span><div><b>Остаёмся на связи</b><span>Чат на сайте и ответы оператора каждый день.</span></div></li>
+<li data-reveal><span class="num">一</span><div><b>Отбираем вкусы</b><span>Следим за трендами и тестируем новинки на себе.</span></div></li>
+<li data-reveal><span class="num">二</span><div><b>Проверяем документы</b><span>Только товары, прошедшие сертификацию в ЕАЭС.</span></div></li>
+<li data-reveal><span class="num">三</span><div><b>Бережно упаковываем</b><span>Хрупкое в пузырчатую плёнку, напитки отдельно.</span></div></li>
+<li data-reveal><span class="num">四</span><div><b>Остаёмся на связи</b><span>Чат на сайте и живой оператор каждый день.</span></div></li>
 </ol></div></section>
 
-<section class="section section-alt" aria-labelledby="faq-title"><div class="container">
-<div class="section-head"><div><span class="ornament" aria-hidden="true"></span><h2 id="faq-title">Частые вопросы</h2></div></div>
-<div class="faq">${faq.map(([q, a]) => `<details><summary>${esc(q)}</summary><p>${esc(a)}</p></details>`).join('')}</div>
+<section class="section" aria-labelledby="faq-title"><div class="container">
+${head('问答', 'спрашивают чаще всего', 'Частые вопросы', 'faq-title')}
+<div class="faq-wrap"><div class="faq">${faq.map(([q, a]) => `<details data-reveal><summary>${esc(q)}</summary><p>${esc(a)}</p></details>`).join('')}</div>
+<aside class="faq-aside" data-reveal><img src="assets/img/products/lychee-soda-360.webp" alt="" width="360" height="450" loading="lazy"><p class="note">Не нашли ответ? Напишите в чат в углу экрана, ответим быстро.</p></aside></div>
 </div></section>`;
   const jsonLd = [
     { '@context': 'https://schema.org', '@type': 'OnlineStore', name: 'ХАОЧИ', url: site.siteUrl + '/', logo: `${site.siteUrl}/assets/img/icon-512.png`, image: `${site.siteUrl}/assets/img/og.jpg`, email: site.settings.email, telephone: site.settings.phone, address: { '@type': 'PostalAddress', streetAddress: site.settings.address, addressCountry: 'RU' } },
@@ -261,7 +277,7 @@ export function productPage(site, p, products) {
 <div class="container" data-product-id="${esc(p.id)}">
 <div class="pt-24">${crumbs(r, [['catalog.html', 'Каталог'], [`catalog.html?cat=${p.category}`, CATEGORIES[p.category]], [null, p.name]])}</div>
 <div class="product" id="product-root">
-<div class="product-media">${p.badge ? `<span class="badge" data-kind="${esc(p.badge)}">${esc(p.badge)}</span>` : ''}<img id="p-img" src="${r}${esc(p.image)}" alt="${esc(p.name)}" width="720" height="900" fetchpriority="high" decoding="async"></div>
+<div class="product-media" data-cat="${esc(p.category)}"><span class="plate" aria-hidden="true"></span>${p.badge ? `<span class="badge" data-kind="${esc(p.badge)}">${esc(p.badge)}</span>` : ''}<img id="p-img" src="${r}${esc(p.image)}" alt="${esc(p.name)}" width="720" height="900" fetchpriority="high" decoding="async"></div>
 <div class="product-info">
 <h1 id="p-name">${esc(p.name)}</h1>
 ${p.cn ? `<div class="cn" lang="zh">${esc(p.cn)}</div>` : ''}

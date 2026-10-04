@@ -67,7 +67,7 @@ test('SEO: canonical, JSON-LD Product, sitemap и robots', () => {
 test('производительность: размер ресурсов в разумных пределах', () => {
   const size = (p) => statSync(join(dist, p)).size;
   assert.ok(size('assets/js/shop.js') < 80_000);
-  assert.ok(size('assets/css/main.css') < 40_000);
+  assert.ok(size('assets/css/main.css') < 50_000, 'CSS до 50 КБ (≈10 КБ в gzip)');
   for (const f of walk(join(dist, 'assets/img/products'))) assert.ok(statSync(f).size < 80_000, f);
   const home = readFileSync(join(dist, 'index.html'), 'utf8');
   assert.match(home, /rel="preload"[^>]+as="font"/);

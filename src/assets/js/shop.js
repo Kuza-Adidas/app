@@ -63,7 +63,7 @@ function buyControl(p, big = false) {
   if (q) return stepper(p.id, q, `Количество «${p.name}» в корзине`);
   if (p.stock <= 0) return h('button', { class: big ? 'btn btn-primary' : 'add-btn', type: 'button', disabled: true, text: 'Нет в наличии' });
   return h('button', { class: big ? 'btn btn-primary' : 'add-btn', type: 'button', dataset: { add: p.id }, 'aria-label': `Добавить «${p.name}» в корзину` },
-    icon('cart'), big ? 'Добавить в корзину' : 'В корзину');
+    icon(big ? 'cart' : 'plus'), big ? 'Добавить в корзину' : h('span', { text: 'В корзину' }));
 }
 
 function syncBuyControls() {
@@ -80,7 +80,7 @@ function syncBuyControls() {
 document.addEventListener('click', (e) => {
   const t = e.target.closest('[data-add],[data-inc],[data-dec],[data-remove],[data-open-cart],[data-close-cart],[data-open-consent]');
   if (!t) return;
-  if (t.dataset.add) cart.add(t.dataset.add);
+  if (t.dataset.add) { flyToCart(t); cart.add(t.dataset.add); }
   else if (t.dataset.inc) cart.add(t.dataset.inc);
   else if (t.dataset.dec) cart.set(t.dataset.dec, cart.qty(t.dataset.dec) - 1);
   else if (t.dataset.remove) cart.set(t.dataset.remove, 0);
@@ -159,8 +159,8 @@ function spicyEl(level) {
 }
 
 function card(p, eager = false) {
-  return h('article', { class: 'card' },
-    h('div', { class: 'card-media' },
+  return h('article', { class: 'card', dataset: { cat: p.category, reveal: '' } },
+    h('div', { class: 'card-media' }, h('span', { class: 'plate', 'aria-hidden': 'true' }),
       p.badge ? h('span', { class: 'badge', dataset: { kind: p.badge }, text: p.badge }) : null,
       h('img', {
         src: imgSrc(p.thumb || p.image), srcset: p.thumb ? `${imgSrc(p.thumb)} 360w, ${imgSrc(p.image)} 720w` : null,
@@ -177,7 +177,7 @@ function card(p, eager = false) {
 function selectProducts(filter) {
   const [kind, arg] = filter.split(':');
   if (kind === 'hits') return catalog.filter(p => p.badge === 'Хит' || p.oldPrice).slice(0, 8);
-  if (kind === 'new') return catalog.filter(p => p.badge === 'Новинка' || !p.hasPage).concat(catalog.filter(p => p.badge !== 'Новинка' && p.hasPage && p.photo)).slice(0, 4);
+  if (kind === 'new') return catalog.filter(p => p.badge === 'Новинка' || !p.hasPage).concat(catalog.filter(p => ['lychee-soda', 'mochi-taro', 'hawthorn'].includes(p.id))).slice(0, 4);
   if (kind === 'category') return catalog.filter(p => p.category === arg);
   if (kind === 'related') {
     const cur = catalog.find(p => p.id === arg);
@@ -191,6 +191,7 @@ function renderGrids() {
     if (grid.id === 'catalog-grid') continue;
     const list = selectProducts(grid.dataset.grid);
     grid.replaceChildren(...list.map(p => card(p)));
+    reveal(grid, true);
   }
 }
 
@@ -220,6 +221,7 @@ function initCatalog() {
     if (state.sort === 'price-desc') list = list.slice().sort((a, b) => b.price - a.price);
     if (state.sort === 'name') list = list.slice().sort((a, b) => a.name.localeCompare(b.name, 'ru'));
     grid.replaceChildren(...list.map((p, i) => card(p, i < 4)));
+    reveal(grid, true);
     $('#catalog-empty').hidden = list.length > 0;
     $('#result-count').textContent = `Найдено товаров: ${list.length}`;
     const title = state.cat === 'all' ? 'Каталог' : CATEGORIES[state.cat];
@@ -277,7 +279,7 @@ function renderDynamicProduct(p) {
   $('meta[name="description"]')?.setAttribute('content', p.description.slice(0, 160));
   $('#crumb-name').textContent = p.name;
   $('#product-root').replaceChildren(
-    h('div', { class: 'product-media' },
+    h('div', { class: 'product-media', dataset: { cat: p.category } }, h('span', { class: 'plate', 'aria-hidden': 'true' }),
       p.badge ? h('span', { class: 'badge', dataset: { kind: p.badge }, text: p.badge }) : null,
       h('img', { id: 'p-img', src: imgSrc(p.image), alt: p.name, width: 720, height: 900 })),
     h('div', { class: 'product-info' },
@@ -542,6 +544,56 @@ function initChat() {
   schedule();
 }
 
+
+// =====================================================================
+// Анимации: появление при прокрутке и «полёт» товара в корзину
+// =====================================================================
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const io = !reduceMotion && 'IntersectionObserver' in window ? new IntersectionObserver((entries) => {
+  let k = 0;
+  for (const e of entries) {
+    if (!e.isIntersecting) continue;
+    e.target.style.setProperty('--d', `${Math.min(k++, 6) * 70}ms`);
+    e.target.classList.add('in');
+    io.unobserve(e.target);
+  }
+}, { rootMargin: '0px 0px -8% 0px', threshold: 0.08 }) : null;
+
+/** instant — элементы, уже попавшие в экран, показываются сразу (при перерисовке сетки без мигания). */
+function reveal(root = document, instant = false) {
+  for (const el of $$('[data-reveal]:not(.in)', root)) {
+    if (!io) { el.classList.add('in'); continue; }
+    if (instant && el.getBoundingClientRect().top < window.innerHeight) el.classList.add('in');
+    else io.observe(el);
+  }
+}
+
+function flyToCart(btn) {
+  if (reduceMotion) return;
+  const img = btn.closest('.card, .product')?.querySelector('.card-media img, #p-img');
+  const target = $('.header .cart-btn');
+  if (!img || !target || !img.animate) return;
+  const a = img.getBoundingClientRect();
+  const b = target.getBoundingClientRect();
+  const ghost = img.cloneNode(false);
+  ghost.removeAttribute('srcset');
+  ghost.removeAttribute('id');
+  ghost.className = 'fly-ghost';
+  ghost.alt = '';
+  Object.assign(ghost.style, { left: `${a.left}px`, top: `${a.top}px`, width: `${a.width}px`, height: `${a.height}px` });
+  document.body.append(ghost);
+  const dx = b.left + b.width / 2 - (a.left + a.width / 2);
+  const dy = b.top + b.height / 2 - (a.top + a.height / 2);
+  ghost.animate([
+    { transform: 'translate(0, 0) scale(1) rotate(0deg)', opacity: 1 },
+    { transform: `translate(${dx * 0.55}px, ${dy * 0.35 - 80}px) scale(.55) rotate(-14deg)`, opacity: 1, offset: 0.55 },
+    { transform: `translate(${dx}px, ${dy}px) scale(.08) rotate(-30deg)`, opacity: 0.4 },
+  ], { duration: 720, easing: 'cubic-bezier(.5,0,.3,1)' }).finished.then(() => {
+    ghost.remove();
+    target.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.25) rotate(-8deg)' }, { transform: 'scale(1)' }], { duration: 380, easing: 'ease-out' });
+  }).catch(() => ghost.remove());
+}
+
 // =====================================================================
 // Общие элементы и запуск
 // =====================================================================
@@ -603,6 +655,7 @@ async function main() {
   consent.init();
   analytics.start();
   initChat();
+  reveal();
   // В демо-режиме изменения из админки в соседней вкладке применяются сразу.
   api.onChange?.(async (topic) => {
     if (topic === 'products') { await loadCatalog(); cart.reconcile(); renderGrids(); syncBuyControls(); renderCart(); }
