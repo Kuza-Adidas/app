@@ -1,0 +1,22 @@
+{
+  "name": "ХАОЧИ",
+  "cnName": "好吃",
+  "tagline": "Китайские снеки и напитки с доставкой",
+  "siteUrl": "https://kuza-adidas.github.io/app",
+  "docVersion": "2026-10-04",
+  "legal": {
+    "company": "ООО «Хаочи» (демо-реквизиты)",
+    "inn": "0000000000",
+    "ogrn": "0000000000000",
+    "address": "123456, г. Москва, ул. Примерная, д. 1, офис 1",
+    "dpoEmail": "privacy@example.com"
+  },
+  "settings": {
+    "announcement": "Бесплатная доставка при заказе от 2 500 ₽",
+    "phone": "+7 900 000-00-00",
+    "email": "hello@example.com",
+    "address": "г. Москва, ул. Примерная, д. 1",
+    "hours": "Ежедневно 9:00–21:00",
+    "freeShippingFrom": 2500
+  }
+}
